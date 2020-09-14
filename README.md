@@ -1,30 +1,26 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# nuist-login
 
-## Getting Started
+南京信息工程大学在线评测系统自助注册服务
 
-First, run the development server:
+## 部署
 
-```bash
-npm run dev
-# or
-yarn dev
-```
+1. 创建 `.env.local` 文件，写入
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+    ```
+    OJ_SECRET=密钥
+    ```
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+    其中`密钥`替换为 Leverage OJ 自助注册接口的哈希密钥
 
-## Learn More
+2. 编译
 
-To learn more about Next.js, take a look at the following resources:
+    ```
+    yarn install
+    yarn build
+    ```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. 运行
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/import?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+    ```
+    yarn start
+    ```

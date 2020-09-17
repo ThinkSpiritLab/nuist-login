@@ -7,18 +7,12 @@ import type { RegisterRes } from "./api/register";
 import type { UserInfo } from "../info";
 import Head from "next/head";
 
-const ALink: React.FC<{ href: string }> = ({ href }: { href: string }) => {
-    return (
-        <a href={href} style={{ margin: "0 0.5em" }}>
-            {href}
-        </a>
-    )
-}
-
 const Index: React.FC = () => {
     useEffect(() => {
         console.log("欢迎关注 ThinkSpirit 开发组", "https://github.com/ThinkSpiritLab");
-    }, [])
+        console.log("欢迎关注 ThinkSpirit 开发组", "https://github.com/ThinkSpiritLab");
+        console.log("欢迎关注 ThinkSpirit 开发组", "https://github.com/ThinkSpiritLab");
+    }, []);
 
     type Account = { username: string, password: string };
 
@@ -62,7 +56,7 @@ const Index: React.FC = () => {
             const res = await axios.post<RegisterRes>("./api/register", { nickname, ojPassword, ...account });
             if (res.data.code === 1001) {
                 const location = res.data.data.location;
-                setTimeout(() => { window.location.href = location }, 3000)
+                setTimeout(() => { window.location.href = location }, 1200)
             }
             setStep(3);
         } catch (e) {
@@ -73,6 +67,9 @@ const Index: React.FC = () => {
             setLoading(false);
         }
     }, [account])
+
+    const OJ_HREF = "https://acm.nuist.edu.cn";
+    const REPO_HREF = "https://github.com/ThinkSpiritLab/nuist-login";
 
     return (
         <>
@@ -86,15 +83,15 @@ const Index: React.FC = () => {
                     </h1>
                     <p>
                         本服务用于注册 Leverage 正式账号，请在
-                    <ALink href="https://acm.nuist.edu.cn" />
-                    登录。
+                        <a href={OJ_HREF} style={{ margin: "0 0.5em" }}>{OJ_HREF}</a>
+                        登录。
                     </p>
                     <p>
                         本服务将使用您的学号和密码登录教务系统，以确认真实身份。
                     </p>
                     <p>
                         相关代码已开源于
-                    <ALink href="https://github.com/ThinkSpiritLab/nuist-login" />
+                        <a href={REPO_HREF} style={{ margin: "0 0.5em" }}>ThinkSpiritLab/nuist-login</a>
                     </p>
 
                     <Form

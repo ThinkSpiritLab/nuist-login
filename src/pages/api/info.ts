@@ -1,6 +1,7 @@
 import { NextApiHandler, PageConfig } from "next";
 import { UserInfo, getUserInfo } from "../../info";
 import type { ApiRes } from "../../api-typings";
+import { logger } from "../../env"
 
 export type InfoRes = ApiRes<UserInfo>;
 
@@ -21,7 +22,7 @@ const Info: NextApiHandler<InfoRes> = async (req, res) => {
         const info = await getUserInfo(username, password);
         res.status(200).json({ code: 1001, data: info });
     } catch (e) {
-        console.error(e);
+        logger.error("getUserInfo error:", e);
         res.status(500).json({ code: 2002, message: "模拟登录失败" })
     }
 

@@ -1,6 +1,7 @@
 import cheerio from "cheerio";
 import CryptoJS from "crypto-js";
 import superagent from "superagent";
+import { logger } from "./env";
 
 const LOGIN_URL = "http://authserver.nuist.edu.cn/authserver/login";
 const SERVICE_URL = "http://authserver.nuist.edu.cn/authserver/index.do";
@@ -40,7 +41,7 @@ function encryptPassword(password: string, key: string) {
     try {
         return encryptAes(password, key);
     } catch (e) {
-        console.error(e);
+        logger.error(e);
         return password;
     }
 }

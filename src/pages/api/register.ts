@@ -3,6 +3,7 @@ import { getUserInfo } from "../../info";
 import type { ApiRes } from "../../api-typings";
 
 import crypto from "crypto";
+import { getOJSecret, logger } from "../../env";
 
 export type RegisterRes = ApiRes<{ location: string }>;
 
@@ -30,16 +31,15 @@ const Register: NextApiHandler<RegisterRes> = async (req, res) => {
     try {
         info = await getUserInfo(username, password);
     } catch (e) {
-        console.error(e);
+        logger.error("getUserInfo error:", e);
         res.status(500).json({ code: 2002, message: "模拟登录失败" })
         return;
     }
 
-    console.debug(new Date().toLocaleString(), info);
+    logger.info(info);
 
-    const secret = process.env["OJ_SECRET"];
-    if (typeof secret !== "string" || secret.length === 0) {
-        console.error("missing environment variable: OJ_SECRET")
+    const secret = getOJSecret();
+    if (!secret) {
         res.status(500).json({ code: 2003, message: "服务配置错误" })
         return;
     }

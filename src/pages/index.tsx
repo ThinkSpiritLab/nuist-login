@@ -27,16 +27,24 @@ const Index: React.FC = () => {
         const username = loginForm.getFieldValue("username");
         const password = loginForm.getFieldValue("password");
         setLoading(true);
-        const res = await axios.post<InfoRes>("./api/info",
-            { username, password },
-            { validateStatus: () => true }
-        );
-        if (res.data.code === 1001) {
-            setAccount({ username, password });
-            setUserInfo(res.data.data);
-            setStep(2);
-        } else {
-            message.error({ content: res.data.message, style: { marginTop: "50vh" } });
+        let data = null;
+        try {
+            const res = await axios.post<InfoRes>("./api/info",
+                { username, password },
+                { validateStatus: () => true }
+            );
+            data = res.data;
+        } catch (e) {
+            message.error({ content: "网络异常", style: { marginTop: "50vh" } });
+        }
+        if (data) {
+            if (data.code === 1001) {
+                setAccount({ username, password });
+                setUserInfo(data.data);
+                setStep(2);
+            } else {
+                message.error({ content: data.message, style: { marginTop: "50vh" } });
+            }
         }
         setLoading(false);
     }, [])

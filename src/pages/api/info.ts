@@ -2,8 +2,22 @@ import { NextApiHandler, PageConfig } from "next";
 import { UserInfo, getUserInfo } from "../../info";
 import type { ApiRes } from "../../api-typings";
 import { logger } from "../../env"
+import { IsNotEmpty, IsString, MaxLength, validate, validateOrReject } from "class-validator";
+import { plainToClass } from "class-transformer";
 
 export type InfoRes = ApiRes<UserInfo>;
+
+class InfoReq {
+    @MaxLength(128)
+    @IsString()
+    @IsNotEmpty()
+    username!: string
+
+    @MaxLength(128)
+    @IsString()
+    @IsNotEmpty()
+    password!: string
+}
 
 const Info: NextApiHandler<InfoRes> = async (req, res) => {
     if (req.method?.toLowerCase() !== "post") {
@@ -11,15 +25,17 @@ const Info: NextApiHandler<InfoRes> = async (req, res) => {
         return;
     }
 
-    const username: unknown = req.body.username;
-    const password: unknown = req.body.password;
-    if (typeof username !== "string" || typeof password !== "string") {
+    const dto = plainToClass(InfoReq, req.body);
+    try {
+        await validateOrReject(dto);
+    } catch (errors) {
+        logger.error("/api/info: dto error:", errors);
         res.status(400).json({ code: 2001, message: "请求格式错误" });
         return;
     }
 
     try {
-        const info = await getUserInfo(username, password);
+        const info = await getUserInfo(dto.username, dto.password);
         res.status(200).json({ code: 1001, data: info });
     } catch (e) {
         logger.error("getUserInfo error:", e);

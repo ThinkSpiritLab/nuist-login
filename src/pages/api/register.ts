@@ -4,8 +4,32 @@ import type { ApiRes } from "../../api-typings";
 
 import crypto from "crypto";
 import { getOJSecret, logger } from "../../env";
+import { IsNotEmpty, IsString, MaxLength, validateOrReject } from "class-validator";
+import { plainToClass } from "class-transformer";
 
 export type RegisterRes = ApiRes<{ location: string }>;
+
+class RegisterReq {
+    @MaxLength(128)
+    @IsString()
+    @IsNotEmpty()
+    username!: string
+
+    @MaxLength(128)
+    @IsString()
+    @IsNotEmpty()
+    password!: string
+
+    @MaxLength(128)
+    @IsString()
+    @IsNotEmpty()
+    nickname!: string
+
+    @MaxLength(128)
+    @IsString()
+    @IsNotEmpty()
+    ojPassword!: string
+}
 
 const Register: NextApiHandler<RegisterRes> = async (req, res) => {
     if (req.method?.toLowerCase() !== "post") {
@@ -13,23 +37,18 @@ const Register: NextApiHandler<RegisterRes> = async (req, res) => {
         return;
     }
 
-    const username: unknown = req.body.username;
-    const password: unknown = req.body.password;
-    const nickname: unknown = req.body.nickname;
-    const ojPassword: unknown = req.body.ojPassword;
-    if (
-        typeof username !== "string"
-        || typeof password !== "string"
-        || typeof nickname !== "string"
-        || typeof ojPassword !== "string"
-    ) {
+    const dto = plainToClass(RegisterReq, req.body);
+    try {
+        await validateOrReject(dto);
+    } catch (errors) {
+        logger.error("/api/register: dto error:", errors);
         res.status(400).json({ code: 2001, message: "请求格式错误" });
         return;
     }
 
     let info = undefined;
     try {
-        info = await getUserInfo(username, password);
+        info = await getUserInfo(dto.username, dto.password);
     } catch (e) {
         logger.error("getUserInfo error:", e);
         res.status(500).json({ code: 2002, message: "模拟登录失败" })
@@ -52,8 +71,8 @@ const Register: NextApiHandler<RegisterRes> = async (req, res) => {
         college: info["学院"],
         class: info["班级"],
         grade: info["年级"],
-        password: ojPassword,
-        nickname: nickname,
+        password: dto.ojPassword,
+        nickname: dto.nickname,
     };
 
     const json = JSON.stringify(data);

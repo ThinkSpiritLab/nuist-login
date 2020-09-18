@@ -2,8 +2,9 @@ import { NextApiHandler, PageConfig } from "next";
 import { UserInfo, getUserInfo } from "../../info";
 import type { ApiRes } from "../../api-typings";
 import { logger } from "../../env"
-import { IsNotEmpty, IsString, MaxLength, validate, validateOrReject } from "class-validator";
+import { IsNotEmpty, IsString, MaxLength, validateOrReject } from "class-validator";
 import { plainToClass } from "class-transformer";
+import timeout from "../../timeout";
 
 export type InfoRes = ApiRes<UserInfo>;
 
@@ -35,7 +36,7 @@ const Info: NextApiHandler<InfoRes> = async (req, res) => {
     }
 
     try {
-        const info = await getUserInfo(dto.username, dto.password);
+        const info = await timeout(getUserInfo(dto.username, dto.password), 16000);
         res.status(200).json({ code: 1001, data: info });
     } catch (e) {
         logger.error("getUserInfo error:", e);

@@ -20,7 +20,9 @@
     "next": "9.5.3",
     "react": "16.13.1",
     "react-dom": "16.13.1",
-    "superagent": "^6.1.0"
+    "sqlite3": "^5.0.0",
+    "superagent": "^6.1.0",
+    "typeorm": "^0.2.26"
   },
   "devDependencies": {
     "@types/axios": "^0.14.0",

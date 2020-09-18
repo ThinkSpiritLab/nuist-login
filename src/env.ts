@@ -11,4 +11,3 @@ export function getOJSecret(): string | null {
     }
     return secret;
 }
-

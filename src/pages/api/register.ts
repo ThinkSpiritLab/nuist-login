@@ -106,7 +106,7 @@ const Register: NextApiHandler<RegisterRes> = async (req, res) => {
             .digest('hex'),
     }
 
-    const location = `https://acm.nuist.edu.cn/v1/register-direct?data=${params.data}&hash=${params.hash}`;
+    const location = `https://cpc.nuist.edu.cn/v1/register-direct?data=${params.data}&hash=${params.hash}`;
     res.status(200).json({ code: 1001, data: { location } });
 };
 

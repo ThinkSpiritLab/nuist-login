@@ -76,7 +76,7 @@ const Index: React.FC = () => {
         }
     }, [account])
 
-    const OJ_HREF = "https://acm.nuist.edu.cn";
+    const OJ_HREF = "https://cpc.nuist.edu.cn";
     const REPO_HREF = "https://github.com/ThinkSpiritLab/nuist-login";
 
     return (

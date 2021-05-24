@@ -15,12 +15,12 @@
 2. 编译
 
     ```
-    yarn install
-    yarn build
+    npm install
+    npm run build
     ```
 
 3. 运行
 
     ```
-    yarn start
+    npm start
     ```

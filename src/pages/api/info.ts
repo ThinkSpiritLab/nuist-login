@@ -1,7 +1,8 @@
-import { NextApiHandler, PageConfig } from "next";
+import { NextApiRequest, NextApiResponse, PageConfig } from "next";
+import { withIronSession, Session } from "next-iron-session";
 import { UserInfo, getUserInfo } from "../../info";
 import type { ApiRes } from "../../api-typings";
-import { logger } from "../../env"
+import { logger, getIronSessionPW, getAppCookieName } from "../../env"
 import { IsNotEmpty, IsString, MaxLength, validateOrReject } from "class-validator";
 import { plainToClass } from "class-transformer";
 import timeout from "../../timeout";
@@ -21,11 +22,10 @@ class InfoReq {
 
     @MaxLength(128)
     @IsString()
-    @IsNotEmpty()
-    captcha?: string
+    captcha!: string
 }
 
-const Info: NextApiHandler<InfoRes> = async (req, res) => {
+const Info = async (req: NextApiRequest & { session: Session }, res: NextApiResponse) => {
     if (req.method?.toLowerCase() !== "post") {
         res.status(405);
         return;
@@ -41,7 +41,8 @@ const Info: NextApiHandler<InfoRes> = async (req, res) => {
     }
 
     try {
-        const info = await timeout(getUserInfo(dto.username, dto.password, dto.captcha), 16000);
+        const cookies = req.session.get("Cookie") as string[];
+        const info = await timeout(getUserInfo(dto.username, dto.password, dto.captcha, cookies), 16000);
         res.status(200).json({ code: 1001, data: info });
     } catch (e) {
         logger.error("getUserInfo error:", e);
@@ -58,4 +59,7 @@ export const config: PageConfig = {
     }
 }
 
-export default Info;
+export default withIronSession(Info, {
+    password: getIronSessionPW(),
+    cookieName: getAppCookieName()
+})

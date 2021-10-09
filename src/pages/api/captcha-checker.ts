@@ -1,5 +1,5 @@
 import { MaxLength, IsString, IsNotEmpty } from "class-validator";
-import { NextApiHandler } from "next";
+import { NextApiHandler, PageConfig } from "next";
 import { plainToClass } from "class-transformer";
 import superagent from "superagent";
 import type { ApiRes } from "../../api-typings";
@@ -42,4 +42,13 @@ const CaptchaChecker: NextApiHandler<CaptchaCheckerRes> = async (req, res) => {
         res.status(500).json({ code: 2005, message: "获取验证码失败" });
     }
 }
+
+export const config: PageConfig = {
+    api: {
+        bodyParser: {
+            sizeLimit: "1kb"
+        }
+    }
+}
+
 export default CaptchaChecker;

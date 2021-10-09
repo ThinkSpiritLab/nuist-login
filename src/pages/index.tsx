@@ -33,7 +33,7 @@ const Index: React.FC = () => {
         let data = null;
         try {
             const res = await axios.post<InfoRes>("./api/info",
-                { username, password, captcha },
+                { username, password, captcha: (captcha ? captcha : "") },
                 { validateStatus: () => true }
             );
             data = res.data;
@@ -142,7 +142,7 @@ const Index: React.FC = () => {
                             <Form.Item name="password" rules={[{ required: true, message: "密码不能为空" }]}>
                                 <Input prefix={<LockOutlined style={{ color: "rgba(0, 0, 0, 0.25)" }} />} type="password" placeholder="统一身份认证密码" />
                             </Form.Item>
-                            <Form.Item name="captcha" rules={[{ required: false, message: "fixme" }]} hidden={captcha === undefined ? true : false}>
+                            <Form.Item name="captcha" hidden={captcha === undefined ? true : false}>
                                 <Row>
                                     <Col flex="auto">
                                         <Input prefix={<LockOutlined style={{ color: "rgba(0, 0, 0, 0.25)" }} />} type="text" placeholder="验证码" />

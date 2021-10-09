@@ -139,8 +139,11 @@ export interface UserInfo {
 //     }
 // }
 
-export async function getUserInfo(username: string, password: string, captcha?: string): Promise<UserInfo> {
+export async function getUserInfo(username: string, password: string, captcha: string, cookies: string[]): Promise<UserInfo> {
     const agent = superagent.agent();
+    agent.set({
+        "Cookie": cookies.map(s => s.replace("HttpOnly", "")).join("; ")
+    });
 
     await login(agent, username, password, captcha);
 

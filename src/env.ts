@@ -11,3 +11,21 @@ export function getOJSecret(): string | null {
     }
     return secret;
 }
+
+export function getIronSessionPW(): string {
+    const secret = process.env["IRONSESSION_PASS"];
+    if (typeof secret !== "string" || secret.length < 32) {
+        logger.fatal("missing environment variable: IRONSESSION_PASS or variable to simple")
+        return "";
+    }
+    return secret;
+}
+
+export function getAppCookieName(): string {
+    const name = process.env["APP_COOKIE_NAME"];
+    if (typeof name !== "string" || name.length === 0) {
+        logger.fatal("missing environment variable: APP_COOKIE_NAME")
+        return "";
+    }
+    return name;
+}

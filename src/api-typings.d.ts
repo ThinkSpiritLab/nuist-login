@@ -8,4 +8,6 @@ export type ApiRes<T> = {
     code: 2003, message: "服务配置错误"
 } | {
     code: 2004, message: "服务内部错误"
+} | {
+    code: 2005, message: "获取验证码失败"
 };

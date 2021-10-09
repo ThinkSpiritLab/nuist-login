@@ -18,6 +18,11 @@ class InfoReq {
     @IsString()
     @IsNotEmpty()
     password!: string
+
+    @MaxLength(128)
+    @IsString()
+    @IsNotEmpty()
+    captcha?: string
 }
 
 const Info: NextApiHandler<InfoRes> = async (req, res) => {
@@ -36,7 +41,7 @@ const Info: NextApiHandler<InfoRes> = async (req, res) => {
     }
 
     try {
-        const info = await timeout(getUserInfo(dto.username, dto.password), 16000);
+        const info = await timeout(getUserInfo(dto.username, dto.password, dto.captcha), 16000);
         res.status(200).json({ code: 1001, data: info });
     } catch (e) {
         logger.error("getUserInfo error:", e);

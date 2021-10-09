@@ -1,9 +1,10 @@
 import React, { useState, useCallback, useEffect } from "react";
-import { Form, Input, Button, Row, Col, message, Spin } from "antd";
+import { Form, Input, Button, Row, Col, message, Spin, Image } from "antd";
 import { UserOutlined, LockOutlined, LoadingOutlined } from "@ant-design/icons"
 import axios from "axios";
 import type { InfoRes } from "./api/info";
 import type { RegisterRes } from "./api/register";
+import type { CaptchaCheckerRes } from "./api/captcha-checker";
 import type { UserInfo } from "../info";
 import Head from "next/head";
 
@@ -18,6 +19,7 @@ const Index: React.FC = () => {
 
     const [account, setAccount] = useState<Account | null>();
     const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+    const [captcha, setCaptcha] = useState<string | undefined>(undefined);
     const [loading, setLoading] = useState(false);
     const [step, setStep] = useState<1 | 2 | 3>(1);
     const [loginForm] = Form.useForm();
@@ -26,11 +28,12 @@ const Index: React.FC = () => {
     const handleSubmit = useCallback(async () => {
         const username = loginForm.getFieldValue("username");
         const password = loginForm.getFieldValue("password");
+        const captcha  = loginForm.getFieldValue("captcha");
         setLoading(true);
         let data = null;
         try {
             const res = await axios.post<InfoRes>("./api/info",
-                { username, password },
+                { username, password, captcha },
                 { validateStatus: () => true }
             );
             data = res.data;
@@ -76,6 +79,30 @@ const Index: React.FC = () => {
         }
     }, [account])
 
+    const handleCaptcha = useCallback(async () => {
+        if (!loginForm.getFieldValue("username")) return
+
+        try {
+            const r = await axios.get<CaptchaCheckerRes>("./api/captcha-checker", {
+                params: {
+                    username: loginForm.getFieldValue("username")
+                }
+            });
+            if (r.data.code === 1001) {
+                if (r.data.data) {
+                    setCaptcha("api/captcha-transfer");
+                } else {
+                    setCaptcha(undefined);
+                }
+            } else if (r.data.code === 2005) {
+                throw new Error(r.data.message)
+            }
+        } catch (e) {
+            console.error(e);
+            message.error({ content: "验证码服务异常", style: { marginTop: "50vh" } });
+        }
+    }, []);
+
     const OJ_HREF = "https://cpc.nuist.edu.cn";
     const REPO_HREF = "https://github.com/ThinkSpiritLab/nuist-login";
 
@@ -109,15 +136,26 @@ const Index: React.FC = () => {
                     >
                         <Spin spinning={loading}>
                             <Form.Item name="username" rules={[{ required: true, message: "学号不能为空" }]}>
-                                <Input prefix={<UserOutlined style={{ color: "rgba(0, 0, 0, 0.25)" }} />} type="text" placeholder="学号" />
+                                <Input onBlur={() => { handleCaptcha(); }}
+                                    prefix={<UserOutlined style={{ color: "rgba(0, 0, 0, 0.25)" }} />} type="text" placeholder="学号" />
                             </Form.Item>
                             <Form.Item name="password" rules={[{ required: true, message: "密码不能为空" }]}>
                                 <Input prefix={<LockOutlined style={{ color: "rgba(0, 0, 0, 0.25)" }} />} type="password" placeholder="统一身份认证密码" />
                             </Form.Item>
+                            <Form.Item name="captcha" rules={[{ required: false, message: "fixme" }]} hidden={captcha === undefined ? true : false}>
+                                <Row>
+                                    <Col flex="auto">
+                                        <Input prefix={<LockOutlined style={{ color: "rgba(0, 0, 0, 0.25)" }} />} type="text" placeholder="验证码" />
+                                    </Col>
+                                    <Col>
+                                        <Image src={captcha}></Image>
+                                    </Col>
+                                </Row>
+                            </Form.Item>
                             <Form.Item style={{ textAlign: "center" }}>
                                 <Button type="primary" htmlType="submit" style={{ width: "30%" }}>
                                     提交
-                            </Button>
+                                </Button>
                             </Form.Item>
                         </Spin>
                     </Form>
@@ -175,7 +213,7 @@ const Index: React.FC = () => {
                             <div style={{ display: "flex", justifyContent: "space-around" }}>
                                 <Button onClick={handleGoBack} style={{ minWidth: "5em" }}>
                                     后退
-                            </Button>
+                                </Button>
                                 <Button type="primary" htmlType="submit" style={{ minWidth: "5em" }}>
                                     确认
                                 </Button>

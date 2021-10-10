@@ -43,7 +43,7 @@ const Info: NextIronHandler<InfoRes> = async (req, res) => {
     try {
         const cookies = req.session.get("Cookie");
         const info = await timeout(getUserInfo(dto.username, dto.password, dto.captcha, cookies), 16000);
-        req.session.set("captcha", dto.captcha);
+        req.session.set("info", info);
         await req.session.save();
         res.status(200).json({ code: 1001, data: info });
     } catch (e) {

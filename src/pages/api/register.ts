@@ -1,12 +1,10 @@
 import { PageConfig } from "next";
-import { getUserInfo } from "../../info";
 import type { ApiRes, NextIronHandler } from "../../typings";
 import crypto from "crypto";
 import { getAppCookieName, getIronSessionPW, getOJSecret, logger } from "../../env";
 import { IsNotEmpty, IsString, MaxLength, validateOrReject } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { ensureConnection, StudentInfo } from "../../db";
-import timeout from "../../timeout";
 import { withIronSession } from "next-iron-session";
 
 export type RegisterRes = ApiRes<{ location: string }>;
@@ -50,9 +48,10 @@ const Register: NextIronHandler<RegisterRes> = async (req, res) => {
 
     let info = undefined;
     try {
-        const captcha = req.session.get("captcha");
-        const cookies = req.session.get("Cookie");
-        info = await timeout(getUserInfo(dto.username, dto.password, captcha, cookies), 16000);
+        info = req.session.get("info");
+        if (info === undefined) {
+            throw new Error("user info not found in session");
+        }
     } catch (e) {
         logger.error("getUserInfo error:", e);
         res.status(500).json({ code: 2002, message: "模拟登录失败" })

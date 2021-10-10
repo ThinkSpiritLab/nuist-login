@@ -45,7 +45,7 @@ function encryptPassword(password: string, key: string) {
     }
 }
 
-async function login(agent: Agent, username: string, password: string, captcha?: string) {
+async function login(agent: Agent, username: string, password: string, captcha: string | undefined) {
     interface LoginParams {
         username: string;
         password: string;
@@ -57,7 +57,7 @@ async function login(agent: Agent, username: string, password: string, captcha?:
         execution: string;
     }
 
-    const getParams = async (username: string, password: string, captcha?: string): Promise<LoginParams> => {
+    const getParams = async (username: string, password: string, captcha: string | undefined): Promise<LoginParams> => {
         const res = await agent.get(LOGIN_URL);
         const $ = cheerio.load(res.text);
 
@@ -139,11 +139,13 @@ export interface UserInfo {
 //     }
 // }
 
-export async function getUserInfo(username: string, password: string, captcha: string, cookies: string[]): Promise<UserInfo> {
+export async function getUserInfo(username: string, password: string, captcha: string | undefined, cookies: string[] | undefined): Promise<UserInfo> {
     const agent = superagent.agent();
-    agent.set({
-        "Cookie": cookies.map(s => s.replace("HttpOnly", "")).join("; ")
-    });
+    if (cookies !== undefined) {
+        agent.set({
+            "Cookie": cookies.map(s => s.replace("HttpOnly", "")).join("; ")
+        });
+    }
 
     await login(agent, username, password, captcha);
 

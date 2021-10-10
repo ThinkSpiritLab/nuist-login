@@ -1,3 +1,5 @@
+import { NextApiResponse } from "next";
+
 export type ApiRes<T> = {
     code: 1001, data: T;
 } | {
@@ -11,3 +13,6 @@ export type ApiRes<T> = {
 } | {
     code: 2005, message: "获取验证码失败"
 };
+
+export type NextIronRequest = NextApiRequest & { session: Session };
+export type NextIronHandler<T> = (req: NextIronRequest, res: NextApiResponse<T>) => void | Promise<void>;

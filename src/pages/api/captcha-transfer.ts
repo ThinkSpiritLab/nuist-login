@@ -1,13 +1,15 @@
-import { NextApiRequest, NextApiResponse, PageConfig } from "next";
+import { PageConfig } from "next";
 import superagent from "superagent";
-import { withIronSession, Session } from "next-iron-session";
+import { withIronSession } from "next-iron-session";
 import timeout from "../../timeout";
+import type { NextIronHandler, ApiRes } from "../../typings";
 import { logger, getAppCookieName, getIronSessionPW } from "../../env";
 
 const CAPTCHA_URL = "https://authserver.nuist.edu.cn/authserver/getCaptcha.htl"
 
+type CaptchaTransferRes = ApiRes<null>;
 
-const CaptchaTransfer = async (req: NextApiRequest & { session: Session }, res: NextApiResponse) => {
+const CaptchaTransfer: NextIronHandler<CaptchaTransferRes> = async (req, res) => {
     if (req.method?.toLowerCase() !== "get") {
         res.status(405);
         return;

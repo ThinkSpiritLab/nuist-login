@@ -1,13 +1,13 @@
-import { NextApiHandler, PageConfig } from "next";
+import { PageConfig } from "next";
 import { getUserInfo } from "../../info";
-import type { ApiRes } from "../../api-typings";
-
+import type { ApiRes, NextIronHandler } from "../../typings";
 import crypto from "crypto";
-import { getOJSecret, logger } from "../../env";
+import { getAppCookieName, getIronSessionPW, getOJSecret, logger } from "../../env";
 import { IsNotEmpty, IsString, MaxLength, validateOrReject } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { ensureConnection, StudentInfo } from "../../db";
 import timeout from "../../timeout";
+import { withIronSession } from "next-iron-session";
 
 export type RegisterRes = ApiRes<{ location: string }>;
 
@@ -33,7 +33,7 @@ class RegisterReq {
     ojPassword!: string
 }
 
-const Register: NextApiHandler<RegisterRes> = async (req, res) => {
+const Register: NextIronHandler<RegisterRes> = async (req, res) => {
     if (req.method?.toLowerCase() !== "post") {
         res.status(405);
         return;
@@ -50,7 +50,9 @@ const Register: NextApiHandler<RegisterRes> = async (req, res) => {
 
     let info = undefined;
     try {
-        info = await timeout(getUserInfo(dto.username, dto.password), 16000);
+        const captcha = req.session.get("captcha");
+        const cookies = req.session.get("Cookie");
+        info = await timeout(getUserInfo(dto.username, dto.password, captcha, cookies), 16000);
     } catch (e) {
         logger.error("getUserInfo error:", e);
         res.status(500).json({ code: 2002, message: "模拟登录失败" })
@@ -118,5 +120,7 @@ export const config: PageConfig = {
     }
 }
 
-export default Register;
-
+export default withIronSession(Register, {
+    password: getIronSessionPW(),
+    cookieName: getAppCookieName()
+})

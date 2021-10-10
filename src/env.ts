@@ -15,8 +15,8 @@ export function getOJSecret(): string | null {
 export function getIronSessionPW(): string {
     const secret = process.env["IRONSESSION_PASS"];
     if (typeof secret !== "string" || secret.length < 32) {
-        logger.fatal("missing environment variable: IRONSESSION_PASS or variable to simple")
-        return "";
+        logger.fatal("missing environment variable: IRONSESSION_PASS or variable too simple")
+        throw new Error("environment variable not correctly configured");
     }
     return secret;
 }
@@ -25,7 +25,7 @@ export function getAppCookieName(): string {
     const name = process.env["APP_COOKIE_NAME"];
     if (typeof name !== "string" || name.length === 0) {
         logger.fatal("missing environment variable: APP_COOKIE_NAME")
-        return "";
+        throw new Error("environment variable not correctly configured");
     }
     return name;
 }

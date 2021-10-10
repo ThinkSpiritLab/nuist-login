@@ -1,8 +1,8 @@
-import { MaxLength, IsString, IsNotEmpty } from "class-validator";
+import { MaxLength, IsString, IsNotEmpty, validateOrReject } from "class-validator";
 import { NextApiHandler, PageConfig } from "next";
 import { plainToClass } from "class-transformer";
 import superagent from "superagent";
-import type { ApiRes } from "../../api-typings";
+import type { ApiRes } from "../../typings";
 import timeout from "../../timeout";
 import { logger } from "../../env";
 
@@ -31,6 +31,7 @@ const CaptchaChecker: NextApiHandler<CaptchaCheckerRes> = async (req, res) => {
 
     try {
         const dto = plainToClass(CaptchaCheckerReq, req.query);
+        validateOrReject(dto);
         const r = await timeout(checkNeedCaptcha(dto.username), 16000);
         // if (dto.username == "nocaptest") {
         //     res.status(200).json({ code: 1001, data: false });
@@ -38,7 +39,7 @@ const CaptchaChecker: NextApiHandler<CaptchaCheckerRes> = async (req, res) => {
         // }
         res.status(200).json({ code: 1001, data: r.isNeed });
     } catch (e) {
-        logger.error("/api/captcha-checker: dto error:", e);
+        logger.error("/api/captcha-checker: ", e);
         res.status(500).json({ code: 2005, message: "获取验证码失败" });
     }
 }

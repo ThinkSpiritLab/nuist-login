@@ -148,7 +148,7 @@ const Index: React.FC = () => {
                                         <Input prefix={<LockOutlined style={{ color: "rgba(0, 0, 0, 0.25)" }} />} type="text" placeholder="验证码" />
                                     </Col>
                                     <Col>
-                                        <Image src={captcha}></Image>
+                                        <Image src={captcha} onError={() => { message.error({ content: "验证码服务异常", style: { marginTop: "50vh" } }) }}></Image>
                                     </Col>
                                 </Row>
                             </Form.Item>

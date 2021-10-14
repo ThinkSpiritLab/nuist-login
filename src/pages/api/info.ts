@@ -63,5 +63,8 @@ export const config: PageConfig = {
 
 export default withIronSession(Info, {
     password: getIronSessionPW(),
-    cookieName: getAppCookieName()
+    cookieName: getAppCookieName(),
+    cookieOptions: {
+        secure: process.env.NODE_ENV === "production",
+    },   
 })

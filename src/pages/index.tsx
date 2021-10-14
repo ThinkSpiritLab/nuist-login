@@ -2,6 +2,7 @@ import React, { useState, useCallback, useEffect } from "react";
 import { Form, Input, Button, Row, Col, message, Spin, Image } from "antd";
 import { UserOutlined, LockOutlined, LoadingOutlined } from "@ant-design/icons"
 import axios from "axios";
+import PasswordValidator from "password-validator";
 import type { InfoRes } from "./api/info";
 import type { RegisterRes } from "./api/register";
 import type { CaptchaCheckerRes } from "./api/captcha-checker";
@@ -25,10 +26,13 @@ const Index: React.FC = () => {
     const [loginForm] = Form.useForm();
     const [registerForm] = Form.useForm();
 
+    const schema = new PasswordValidator()
+    schema.is().min(8).is().max(128).has().letters().has().digits().has().not().spaces();
+
     const handleSubmit = useCallback(async () => {
         const username = loginForm.getFieldValue("username");
         const password = loginForm.getFieldValue("password");
-        const captcha  = loginForm.getFieldValue("captcha");
+        const captcha = loginForm.getFieldValue("captcha");
         setLoading(true);
         let data = null;
         try {
@@ -136,7 +140,7 @@ const Index: React.FC = () => {
                     >
                         <Spin spinning={loading}>
                             <Form.Item name="username" rules={[{ required: true, message: "学号不能为空" }]}>
-                                <Input onBlur={() => { handleCaptcha(); }}
+                                <Input onBlur={() => { handleCaptcha(); }} onFocus={() => { handleCaptcha(); }}
                                     prefix={<UserOutlined style={{ color: "rgba(0, 0, 0, 0.25)" }} />} type="text" placeholder="学号" />
                             </Form.Item>
                             <Form.Item name="password" rules={[{ required: true, message: "密码不能为空" }]}>
@@ -185,7 +189,16 @@ const Index: React.FC = () => {
                             <Form.Item
                                 label="密码"
                                 name="password"
-                                rules={[{ required: true, message: "密码不能为空" }]}
+                                rules={[{
+                                    required: true, validator: (_, value) => {
+                                        if (schema.validate(value)) {
+                                            return Promise.resolve();
+                                        } else {
+                                            return Promise.reject();
+                                        }
+                                    },
+                                    message: "密码应至少 8 位长，包含数字和字母"
+                                }]}
                                 required
                             >
                                 <Input type="password" placeholder="请输入密码" />

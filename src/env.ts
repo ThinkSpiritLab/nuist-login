@@ -15,7 +15,7 @@ export function getOJSecret(): string | null {
 export function getIronSessionPW(): string {
     const secret = process.env["IRONSESSION_PASS"];
     if (typeof secret !== "string" || secret.length < 32) {
-        logger.fatal("missing environment variable: IRONSESSION_PASS or variable too simple")
+        logger.fatal("missing environment variable: IRONSESSION_PASS or variable too simple (at least 32 characters long)")
         throw new Error("environment variable not correctly configured");
     }
     return secret;

@@ -39,5 +39,8 @@ export const config: PageConfig = {
 
 export default withIronSession(CaptchaTransfer, {
     password: getIronSessionPW(),
-    cookieName: getAppCookieName()
+    cookieName: getAppCookieName(),
+    cookieOptions: {
+        secure: process.env.NODE_ENV === "production",
+    },    
 })

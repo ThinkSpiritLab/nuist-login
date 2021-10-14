@@ -50,7 +50,7 @@ const Register: NextIronHandler<RegisterRes> = async (req, res) => {
     try {
         info = req.session.get("info");
         if (info === undefined) {
-            throw new Error("user info not found in session");
+            throw new Error("user info not found in context");
         }
     } catch (e) {
         logger.error("getUserInfo error:", e);
@@ -58,6 +58,9 @@ const Register: NextIronHandler<RegisterRes> = async (req, res) => {
         return;
     }
 
+    req.session.unset("Cookie");
+    req.session.unset("info");
+    await req.save();
     logger.info(info);
 
     const secret = getOJSecret();
@@ -121,5 +124,8 @@ export const config: PageConfig = {
 
 export default withIronSession(Register, {
     password: getIronSessionPW(),
-    cookieName: getAppCookieName()
+    cookieName: getAppCookieName(),
+    cookieOptions: {
+        secure: process.env.NODE_ENV === "production",
+    },    
 })

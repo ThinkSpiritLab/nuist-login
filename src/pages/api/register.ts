@@ -6,6 +6,7 @@ import { IsNotEmpty, IsString, MaxLength, validateOrReject } from "class-validat
 import { plainToClass } from "class-transformer";
 import { ensureConnection, StudentInfo } from "../../db";
 import { withIronSession } from "next-iron-session";
+import { UserInfo } from "../../info";
 
 export type RegisterRes = ApiRes<{ location: string }>;
 
@@ -46,7 +47,7 @@ const Register: NextIronHandler<RegisterRes> = async (req, res) => {
         return;
     }
 
-    let info = undefined;
+    let info: UserInfo | undefined = undefined;
     try {
         info = req.session.get("info");
         if (info === undefined) {
@@ -58,9 +59,7 @@ const Register: NextIronHandler<RegisterRes> = async (req, res) => {
         return;
     }
 
-    req.session.unset("Cookie");
-    req.session.unset("info");
-    await req.save();
+    req.session.destroy();
     logger.info(info);
 
     const secret = getOJSecret();

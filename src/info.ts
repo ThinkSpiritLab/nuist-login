@@ -45,7 +45,7 @@ function encryptPassword(password: string, key: string) {
     }
 }
 
-async function login(agent: Agent, username: string, password: string, captcha: string | undefined) {
+async function login(agent: Agent, username: string, password: string, captcha: string) {
     interface LoginParams {
         username: string;
         password: string;
@@ -57,7 +57,7 @@ async function login(agent: Agent, username: string, password: string, captcha: 
         execution: string;
     }
 
-    const getParams = async (username: string, password: string, captcha: string | undefined): Promise<LoginParams> => {
+    const getParams = async (username: string, password: string, captcha: string): Promise<LoginParams> => {
         const res = await agent.get(LOGIN_URL);
         const $ = cheerio.load(res.text);
 
@@ -75,7 +75,7 @@ async function login(agent: Agent, username: string, password: string, captcha: 
         const params: LoginParams = {
             username,
             password: saltPassword,
-            captcha: captcha ? captcha : "",
+            captcha,
             _eventId: "submit",
             cllt: "userNameLogin",
             dllt: "generalLogin",
@@ -85,14 +85,6 @@ async function login(agent: Agent, username: string, password: string, captcha: 
 
         return params;
     }
-
-    // const checkNeedCaptcha = async (username: string) => {
-    //     const res = await agent.get(CAPTCHA_URL).query({ username, "_": new Date().getTime() });
-    //     const data: { isNeed: boolean } = JSON.parse(res.text);
-    //     if (data.isNeed) {
-    //         throw new Error("login requires captcha")
-    //     }
-    // }
 
     const postLogin = async (params: LoginParams) => {
         const res = await agent.post(LOGIN_URL)
@@ -110,7 +102,6 @@ async function login(agent: Agent, username: string, password: string, captcha: 
     };
 
     const params = await getParams(username, password, captcha);
-    // await checkNeedCaptcha(username);
     await postLogin(params);
 }
 
@@ -139,11 +130,11 @@ export interface UserInfo {
 //     }
 // }
 
-export async function getUserInfo(username: string, password: string, captcha: string | undefined, cookies: string[] | undefined): Promise<UserInfo> {
+export async function getUserInfo(username: string, password: string, captcha: string, cookies: string[] | undefined): Promise<UserInfo> {
     const agent = superagent.agent();
     if (cookies !== undefined) {
         agent.set({
-            "Cookie": cookies.map(s => s.replace("HttpOnly", "")).join("; ")
+            "Cookie": cookies.join("; ").replace(" HttpOnly", "")
         });
     }
 

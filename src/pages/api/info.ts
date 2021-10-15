@@ -41,7 +41,7 @@ const Info: NextIronHandler<InfoRes> = async (req, res) => {
     }
 
     try {
-        const cookies = req.session.get("Cookie");
+        const cookies: undefined | string[] = req.session.get("Cookie");
         const info = await timeout(getUserInfo(dto.username, dto.password, dto.captcha, cookies), 16000);
         req.session.set("info", info);
         await req.session.save();

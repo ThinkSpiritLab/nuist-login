@@ -20,7 +20,7 @@ class InfoReq {
     @IsNotEmpty()
     password!: string
 
-    @MaxLength(128)
+    @MaxLength(4)
     @IsString()
     captcha!: string
 }

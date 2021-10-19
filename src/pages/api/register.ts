@@ -2,7 +2,7 @@ import { PageConfig } from "next";
 import type { ApiRes, NextIronHandler } from "../../typings";
 import crypto from "crypto";
 import { getAppCookieName, getIronSessionPW, getOJSecret, logger } from "../../env";
-import { IsNotEmpty, IsString, MaxLength, validateOrReject } from "class-validator";
+import { Contains, IsNotEmpty, IsString, MinLength, MaxLength, validateOrReject } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { ensureConnection, StudentInfo } from "../../db";
 import { withIronSession } from "next-iron-session";
@@ -10,6 +10,8 @@ import { UserInfo } from "../../info";
 
 export type RegisterRes = ApiRes<{ location: string }>;
 
+const LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const DIGITS = "0123456789";
 class RegisterReq {
     @MaxLength(128)
     @IsString()
@@ -26,9 +28,11 @@ class RegisterReq {
     @IsNotEmpty()
     nickname!: string
 
-    @MaxLength(128)
     @IsString()
-    @IsNotEmpty()
+    @MinLength(8)
+    @MaxLength(128)
+    @Contains(LETTERS)
+    @Contains(DIGITS)
     ojPassword!: string
 }
 

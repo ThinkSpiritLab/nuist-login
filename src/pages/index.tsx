@@ -27,7 +27,7 @@ const Index: React.FC = () => {
     const [registerForm] = Form.useForm();
 
     const schema = new PasswordValidator()
-    schema.is().min(8).is().max(128).has().letters().has().digits().has().not().spaces();
+    schema.is().min(8).is().max(128).has().letters().has().digits();
 
     const handleSubmit = useCallback(async () => {
         const username = loginForm.getFieldValue("username");

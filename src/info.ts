@@ -5,7 +5,7 @@ import { logger } from "./env";
 
 const LOGIN_URL = "https://authserver.nuist.edu.cn/authserver/login";
 const HOST_HEADER = "authserver.nuist.edu.cn";
-const CAPTCHA_URL = "http://authserver.nuist.edu.cn/authserver/checkNeedCaptcha.htl";
+// const CAPTCHA_URL = "http://authserver.nuist.edu.cn/authserver/checkNeedCaptcha.htl";
 const WLKT_TRIGGER_URL = "http://wlkt.nuist.edu.cn";
 
 type Agent = superagent.SuperAgentStatic & superagent.Request;
@@ -45,7 +45,7 @@ function encryptPassword(password: string, key: string) {
     }
 }
 
-async function login(agent: Agent, username: string, password: string) {
+async function login(agent: Agent, username: string, password: string, captcha: string) {
     interface LoginParams {
         username: string;
         password: string;
@@ -57,7 +57,7 @@ async function login(agent: Agent, username: string, password: string) {
         execution: string;
     }
 
-    const getParams = async (username: string, password: string): Promise<LoginParams> => {
+    const getParams = async (username: string, password: string, captcha: string): Promise<LoginParams> => {
         const res = await agent.get(LOGIN_URL);
         const $ = cheerio.load(res.text);
 
@@ -75,7 +75,7 @@ async function login(agent: Agent, username: string, password: string) {
         const params: LoginParams = {
             username,
             password: saltPassword,
-            captcha: "",
+            captcha,
             _eventId: "submit",
             cllt: "userNameLogin",
             dllt: "generalLogin",
@@ -84,14 +84,6 @@ async function login(agent: Agent, username: string, password: string) {
         };
 
         return params;
-    }
-
-    const checkNeedCaptcha = async (username: string) => {
-        const res = await agent.get(CAPTCHA_URL).query({ username, "_": new Date().getTime() });
-        const data: { isNeed: boolean } = JSON.parse(res.text);
-        if (data.isNeed) {
-            throw new Error("login requires captcha")
-        }
     }
 
     const postLogin = async (params: LoginParams) => {
@@ -109,8 +101,7 @@ async function login(agent: Agent, username: string, password: string) {
         }
     };
 
-    const params = await getParams(username, password);
-    await checkNeedCaptcha(username);
+    const params = await getParams(username, password, captcha);
     await postLogin(params);
 }
 
@@ -139,10 +130,15 @@ export interface UserInfo {
 //     }
 // }
 
-export async function getUserInfo(username: string, password: string): Promise<UserInfo> {
+export async function getUserInfo(username: string, password: string, captcha: string, cookies: string[] | undefined): Promise<UserInfo> {
     const agent = superagent.agent();
+    if (cookies !== undefined) {
+        agent.set({
+            "Cookie": cookies.join("; ").replace(" HttpOnly", "")
+        });
+    }
 
-    await login(agent, username, password);
+    await login(agent, username, password, captcha);
 
     const loginWlkt = async (): Promise<string> => {
         const res = await agent.get(WLKT_TRIGGER_URL).redirects(10);

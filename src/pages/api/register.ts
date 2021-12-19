@@ -1,16 +1,17 @@
-import { NextApiHandler, PageConfig } from "next";
-import { getUserInfo } from "../../info";
-import type { ApiRes } from "../../api-typings";
-
+import { PageConfig } from "next";
+import type { ApiRes, NextIronHandler } from "../../typings";
 import crypto from "crypto";
-import { getOJSecret, logger } from "../../env";
-import { IsNotEmpty, IsString, MaxLength, validateOrReject } from "class-validator";
+import { getAppCookieName, getIronSessionPW, getOJSecret, logger } from "../../env";
+import { Contains, IsNotEmpty, IsString, MinLength, MaxLength, validateOrReject } from "class-validator";
 import { plainToClass } from "class-transformer";
 import { ensureConnection, StudentInfo } from "../../db";
-import timeout from "../../timeout";
+import { withIronSession } from "next-iron-session";
+import { UserInfo } from "../../info";
 
 export type RegisterRes = ApiRes<{ location: string }>;
 
+const LETTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+const DIGITS = "0123456789";
 class RegisterReq {
     @MaxLength(128)
     @IsString()
@@ -27,13 +28,15 @@ class RegisterReq {
     @IsNotEmpty()
     nickname!: string
 
-    @MaxLength(128)
     @IsString()
-    @IsNotEmpty()
+    @MinLength(8)
+    @MaxLength(128)
+    @Contains(LETTERS)
+    @Contains(DIGITS)
     ojPassword!: string
 }
 
-const Register: NextApiHandler<RegisterRes> = async (req, res) => {
+const Register: NextIronHandler<RegisterRes> = async (req, res) => {
     if (req.method?.toLowerCase() !== "post") {
         res.status(405);
         return;
@@ -48,15 +51,19 @@ const Register: NextApiHandler<RegisterRes> = async (req, res) => {
         return;
     }
 
-    let info = undefined;
+    let info: UserInfo | undefined = undefined;
     try {
-        info = await timeout(getUserInfo(dto.username, dto.password), 16000);
+        info = req.session.get("info");
+        if (info === undefined) {
+            throw new Error("user info not found in context");
+        }
     } catch (e) {
         logger.error("getUserInfo error:", e);
         res.status(500).json({ code: 2002, message: "模拟登录失败" })
         return;
     }
 
+    req.session.destroy();
     logger.info(info);
 
     const secret = getOJSecret();
@@ -118,5 +125,10 @@ export const config: PageConfig = {
     }
 }
 
-export default Register;
-
+export default withIronSession(Register, {
+    password: getIronSessionPW(),
+    cookieName: getAppCookieName(),
+    cookieOptions: {
+        secure: process.env.NODE_ENV === "production",
+    },    
+})
